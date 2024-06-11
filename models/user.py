@@ -1,17 +1,22 @@
-# models/user.py
-
 from . import get_connection
 
 class User:
     @staticmethod
     def create(username, email, full_name):
-        with get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
-                INSERT INTO users (username, email, full_name)
-                VALUES (?, ?, ?)
-            ''', (username, email, full_name))
-            conn.commit()
+        # Check if the username already exists
+        existing_user = User.find_by_username(username)
+        if existing_user:
+            print("Username already exists. Please choose a different username.")
+            return None  # Return None to indicate failure
+        else:
+            with get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute('''
+                    INSERT INTO users (username, email, full_name)
+                    VALUES (?, ?, ?)
+                ''', (username, email, full_name))
+                conn.commit()
+                return cursor.lastrowid  # Return the ID of the inserted user
 
     @staticmethod
     def get_all():

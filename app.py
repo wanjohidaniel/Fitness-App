@@ -1,9 +1,8 @@
-# app.py
-
 from database.setup import create_tables
 from models.user import User
 from models.workout import Workout
 from models.goal import Goal
+from models.membership import Membership
 
 def main():
     # Initialize the database and create tables
@@ -16,19 +15,22 @@ def main():
 
     # Create a user and retrieve its ID
     user_id = User.create(username=username, email=email, full_name=full_name)
-
-    # Retrieve and print the created user
-    user = User.find_by_username(username)
-    if user:
-        print(f"User created successfully with ID: {user_id}")
-        print(f"ID: {user[0]}, Username: {user[1]}, Email: {user[2]}, Full Name: {user[3]}")
+    if user_id is not None:
+        print("User created successfully!")
     else:
-        print("Failed to retrieve user information.")
+        print("Failed to create user.")
+
+    # Retrieve and print all users
+    users = User.get_all()
+    print("\nUsers:")
+    for user in users:
+        print(f"ID: {user[0]}, Username: {user[1]}, Email: {user[2]}, Full Name: {user[3]}")
 
     # Collect workout input
     date = input("Enter workout date: ")
     workout_type = input("Enter workout type: ")
-    duration = int(input("Enter workout duration (in minutes): "))
+    duration_input = input("Enter workout duration in minutes: ")
+    duration = int(''.join(filter(str.isdigit, duration_input)))  # Extract numeric characters
     calories_burned = int(input("Enter calories burned: "))
 
     # Create a workout
@@ -56,6 +58,29 @@ def main():
         print(f"ID: {goal[0]}, User ID: {goal[1]}, Description: {goal[2]}, Target Date: {goal[3]}")
     else:
         print("Failed to retrieve goal information.")
+
+    # Collect membership input
+    plan = input("Enter membership plan: ")
+    start_date = input("Enter membership start date: ")
+    end_date = input("Enter membership end date: ")
+
+    # Create a membership
+    Membership.create(user_id=user_id, plan=plan, start_date=start_date, end_date=end_date)
+
+    # Retrieve and print all memberships
+    memberships = Membership.get_all()
+    print("\nMemberships:")
+    for membership in memberships:
+        print(f"ID: {membership[0]}, User ID: {membership[1]}, Plan: {membership[2]}, Start Date: {membership[3]}, End Date: {membership[4]}")
+
+    # Retrieve membership information for a specified user ID
+    specified_user_id = input("Enter user ID to retrieve membership information: ")
+    user_membership = Membership.find_by_user_id(specified_user_id)
+    if user_membership:
+        print("\nMembership Information:")
+        print(f"ID: {user_membership[0]}, User ID: {user_membership[1]}, Plan: {user_membership[2]}, Start Date: {user_membership[3]}, End Date: {user_membership[4]}")
+    else:
+        print("Membership not found for the specified user ID.")
 
 if __name__ == "__main__":
     main()
